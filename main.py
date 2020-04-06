@@ -12,6 +12,7 @@ class Shop:
     def __init__(self):
         self.shift = 100
         self.start_shift = 0
+        self.counter_shift = 0
         # a db would be better 
         self.drinks =  [
             { "type": "tea",      "brew_time": 3, "profit": 2 },
@@ -30,7 +31,8 @@ class Shop:
 
         self.pending_orders_queue = []
         self.done_orders_queue = []
-       
+        self.free_baristas = []
+        self.busy_baristas = []
 
     def openConfig(self):                
         try:
@@ -47,24 +49,20 @@ class Shop:
             print ("error 2: config error =  " + str(e))
             sys.exit(0)            
 
-    def worker(self,barista):
-        # workers will work until list of orders is empty after that they die
-        print (str(barista._id) + " is working" )
+    def worker(self,barista,order):
+        # workers will work until list of orders is empty after that they die        
         # get the a drink
+        #barista.makeDrink(order)
+        #self.pending_orders_queue.remove(order)
+        r1 = random.randint(0, 2) 
         
-        while(True):    
-            if len(self.pending_orders_queue) <= 0:
-                break
+        print ("worker " +  str(barista._id) + " procees time " + str(r1))
+        
+        time.sleep(r1)        
+        barista.state = 'free'
+        self.free_baristas.append(barista)
+        return None
 
-            for order in self.pending_orders_queue:
-                if order.state == "done":
-                    continue
-                else:
-                    tmpore = order
-                    self.pending_orders_queue.remove(order)
-                    barista.makeDrink(tmpore)                
-                    self.done_orders_queue.append(tmpore)                    
-                    break
 
 
     def OpenStore(self):
@@ -81,19 +79,30 @@ class Shop:
             tmpdrink.order_id = order['order_id']
             tmpdrink.order_time = order['order_time']
             tmpdrink.type = order['type']
-            tmpdrink.state = "pending" # using simple text just for demo
+            tmpdrink.state = "pending" 
             self.pending_orders_queue.append(tmpdrink)
             
         # create the workers they will select the drinks based on the order time (asc) and state, once is brew they will change the state to done, preferly to putting on another queeue of donde orders
         for b in self.baristas:
             barista = Barista()
             barista._id = b['id']
-            t = threading.Thread(target=self.worker,args=(barista,))
-            self.threads.append({'index':b['id'],'thread':t})
-            t.start()              
+            barista.state = 'free'
+            self.free_baristas.append(barista)
+
+        
+        while(True):
+            self.counter_shift+1
+            if len(self.pending_orders_queue) <= 0  or self.counter_shift == self.shift:                
+                break
+     
+            for barista in self.free_baristas:
+                if barista.state == 'free':
+                    self.free_baristas.remove(barista) 
+                    print ("start worker")                                   
+                    t = threading.Thread(target=self.worker,args=(barista,order))                    
+                    t.start()              
             
         
-
 
 if __name__ == "__main__":
     shop = Shop()
