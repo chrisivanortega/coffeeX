@@ -2,13 +2,14 @@
 
 # Files
 
-main.py
-engine.py
-config.json
+ - main.py 
+ - engine.py 
+ - config.json
 
 ## Requirements 
-Python3.7 
-Any text editor for config.json
+
+ - Python3.7 
+ -  Any text editor for config.json
 
 ## Install
 git clone [https://github.com/chrisivanortega/coffeeX](https://github.com/chrisivanortega/coffeeX)
